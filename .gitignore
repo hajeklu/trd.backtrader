@@ -1,4 +1,3 @@
-/data
-/normalized
+/temp
 .DS_Store
 *.pyc
