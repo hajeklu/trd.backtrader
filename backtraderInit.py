@@ -98,4 +98,5 @@ def analyzeSymbol(symbol):
 
 for symbol in symbolsToAnalysts:
     if __name__ == '__main__':
-        Process(target=analyzeSymbol, args=(symbol,)).start()
+        #   Process(target=analyzeSymbol, args=(symbol,)).start()
+        analyzeSymbol(symbol)
