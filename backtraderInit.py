@@ -61,6 +61,25 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
                      'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
 
+def writeToCSV(results, symbol):
+            # Specify the CSV file path
+    csv_file_path = f'{symbol}_profits.csv'
+
+    # Open the CSV file for writing
+
+    with open(csv_file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write the header row
+        writer.writerow(
+            ["EMA", "Profit", "Profitable Orders", "Loss Orders"])
+
+        # Write the data rows
+        for result in results:
+            writer.writerow([result.ema, result.profit,
+                            result.profitableOrders, result.lossOrders])
+    
+    print(f"Profits saved to '{csv_file_path}' file.")
 
 def analyzeSymbol(symbol):
     results = []
@@ -113,22 +132,4 @@ for symbol in symbolsToAnalysts:
         Process(target=analyzeSymbol, args=(symbol,)).start()
         #analyzeSymbol(symbol)
 
-def writeToCSV(results, symbol):
-            # Specify the CSV file path
-    csv_file_path = f'{symbol}_profits.csv'
 
-    # Open the CSV file for writing
-
-    with open(csv_file_path, mode='w', newline='') as file:
-        writer = csv.writer(file)
-
-        # Write the header row
-        writer.writerow(
-            ["EMA", "Profit", "Profitable Orders", "Loss Orders"])
-
-        # Write the data rows
-        for result in results:
-            writer.writerow([result.ema, result.profit,
-                            result.profitableOrders, result.lossOrders])
-    
-    print(f"Profits saved to '{csv_file_path}' file.")
