@@ -1,7 +1,6 @@
 # Import the backtrader platform
 import backtrader as bt
 
-
 class CustomAnalyzer(bt.Analyzer):
     def start(self):
         self.profitableOrders = None
@@ -24,6 +23,7 @@ class TestStrategy(bt.Strategy):
     params = (
         ("EMA1", 20),  # Default value for EMA1
         ("EMA2", 80),  # Default value for EMA2
+        ("symbol", "EURUSD")
     )
 
     def log(self, txt, dt=None):
@@ -40,6 +40,7 @@ class TestStrategy(bt.Strategy):
         self.orderProfit = None
         self.ema1_timeFrame = self.params.EMA1
         self.ema2_timeFrame = self.params.EMA2
+        self.symbol = self.params.symbol
         self.ema1 = bt.indicators.ExponentialMovingAverage(
             self.datas[0], period=self.params.EMA1)
         self.ema2 = bt.indicators.ExponentialMovingAverage(
@@ -57,7 +58,7 @@ class TestStrategy(bt.Strategy):
     def next(self):
         if (not hasattr(self, 'ema2')):
             return
-
+        
         if self.position:
             self.closeOrderLogic()
         else:
@@ -66,7 +67,7 @@ class TestStrategy(bt.Strategy):
 
     def closeOrderLogic(self):
         if self.order:
-            if self.getOrderProfit() < self.orderProfit:
+            if (self.order.isbuy() and self.ema1[0] < self.ema2[0]) or (self.order.issell() and self.ema1[0] > self.ema2[0]):
                 if self.getOrderProfit() > 0:
                     self.profitable_orders += 1
                 else:
@@ -97,12 +98,18 @@ class TestStrategy(bt.Strategy):
 
     def getOrderProfit(self):
         if self.order.isbuy():
-            return self.data.close[0] - self.order.executed.price
+            return self.data.close[0] - (self.order.executed.price + self.getPip(self.symbol))
         else:
-            return self.order.executed.price - self.data.close[0]
+            return self.order.executed.price - (self.data.close[0] + self.getPip(self.symbol))
 
     def getStatistics(self):
         return {
             'profitableOrders': self.profitable_orders,
             'lossOrders': self.loss_orders
         }
+    # example self, EURUSD, 1.12345
+    def getPip(self, symbol): 
+        is_jpy_pair = 'JPY' in symbol.upper()
+        # Set the pip value based on whether it's a JPY pair
+        pip_value = 0.01 if is_jpy_pair else 0.0001
+        return pip_value
