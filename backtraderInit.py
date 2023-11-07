@@ -83,7 +83,7 @@ def writeToCSV(results, symbol):
 
 def analyzeSymbol(symbol):
     results = []
-    for ema2 in range(1, 3):
+    for ema2 in range(1, 201):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
