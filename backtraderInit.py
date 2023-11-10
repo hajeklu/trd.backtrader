@@ -60,26 +60,7 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'NZDCAD', 'AUDJPY', 'EURNOK', 'AUDCAD', 'EURNZD', 'EURCNH', 'NZDCHF',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
                      'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
-
-def writeToCSV(results, symbol):
-            # Specify the CSV file path
-    csv_file_path = f'{symbol}_profits.csv'
-
-    # Open the CSV file for writing
-
-    with open(csv_file_path, mode='w', newline='') as file:
-        writer = csv.writer(file)
-
-        # Write the header row
-        writer.writerow(
-            ["EMA", "Profit", "Profitable Orders", "Loss Orders"])
-
-        # Write the data rows
-        for result in results:
-            writer.writerow([result.ema, result.profit,
-                            result.profitableOrders, result.lossOrders])
     
-    print(f"Profits saved to '{csv_file_path}' file.")
 
 def analyzeSymbol(symbol):
     results = []
@@ -114,16 +95,20 @@ def analyzeSymbol(symbol):
             # print('Final Portfolio Value: %.10f' % crebro.broker.getvalue())
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
-            print(
-                f'EMA {symbol}: {ema1}/{ema2}, Profit: {profit}, orders: {profitableOrders}/{lossOrders}', flush=True)
-            if profitableOrders > lossOrders and profit > 0:
-                results.append(Result(str(ema1) + '/' + str(ema2),
-                                  profit, profitableOrders, lossOrders))
+            print(f'EMA {symbol}: {ema1}/{ema2}, Profit: {profit}, orders: {profitableOrders}/{lossOrders}', flush=True)
 
-    results.sort(key=lambda x: x.lossOrders, reverse=False)
-    for stock in results[:10]:
-        print(f"EMA: {stock.ema}, Profit: {stock.profit}")
-    writeToCSV(results,symbol)
+            if profitableOrders > lossOrders and profit > 0:
+                result = Result(str(ema1) + '/' + str(ema2),
+                                  profit, profitableOrders, lossOrders)
+                results.append(result)
+                csv_file_path = f'{symbol}_profits.csv'
+                with open(csv_file_path, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    
+                    if (file.tell() == 0):
+                        writer.writerow(["EMA", "Profit", "Profitable Orders", "Loss Orders"])
+                    
+                    writer.writerow([result.ema, result.profit, result.profitableOrders, result.lossOrders])
 
 
 
