@@ -73,19 +73,15 @@ def analyzeSymbol(symbol):
             crebro.broker.setcash(START_CASH)
 
             data = RESTAPIData(
-                url=f'http://192.168.0.142:3000/api/prices/{symbol}/1',
+                url=f'http://192.168.0.142:3000/api/prices/{symbol}/5',
                 headers={'Accept': 'application/json'},  # Add any necessary headers here
                 symbol=symbol,
             )
 
             crebro.adddata(data)
-            crebro.addsizer(bt.sizers.FixedSize, stake=10)
-            crebro.broker.setcommission(
-                commission=.00001)
+            crebro.addsizer(bt.sizers.FixedSize, stake=100)
             crebro.addanalyzer(CustomAnalyzer, _name='myresults')
             crebro.addstrategy(TestStrategy, EMA1=ema1, EMA2=ema2, symbol=symbol)
-
-            # print('Starting Portfolio Value: %.10f' % crebro.broker.getvalue())
 
             analyzer_results = crebro.run()
             analysis = analyzer_results[0].analyzers.myresults.get_analysis()
