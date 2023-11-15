@@ -8,14 +8,15 @@ from datetime import datetime
 from backtraderStrategies import TestStrategy, CustomAnalyzer
 
 class Result:
-    def __init__(self, ema, profit, profitableOrders, lossOrders):
-        self.ema = ema
+    def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
+        self.symbol = symbol
+        self.ema1 = ema1
+        self.ema2 = ema2
         self.profit = profit
         self.profitableOrders = profitableOrders
         self.lossOrders = lossOrders
 
 data_cache = dict()
-
 class RESTAPIData(bt.feed.DataBase):
     params = (
         ('url', ''),
@@ -59,11 +60,11 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'EURCHF', 'GBPJPY', 'GBPCHF', 'USDCHF', 'NZDUSD', 'CADJPY', 'GBPCAD',
                      'NZDCAD', 'AUDJPY', 'EURNOK', 'AUDCAD', 'EURNZD', 'EURCNH', 'NZDCHF',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
-                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
+                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF','DE30','US100','EU50','UK100']
     
 
 def analyzeSymbol(symbol):
-    results = []
+    result = None
     for ema2 in range(1, 201):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
@@ -94,19 +95,30 @@ def analyzeSymbol(symbol):
             print(f'EMA {symbol}: {ema1}/{ema2}, Profit: {profit}, orders: {profitableOrders}/{lossOrders}', flush=True)
 
             if profitableOrders > lossOrders and profit > 0:
-                result = Result(str(ema1) + '/' + str(ema2),
-                                  profit, profitableOrders, lossOrders)
-                results.append(result)
-                csv_file_path = f'{symbol}_profits.csv'
-                with open(csv_file_path, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    
-                    if (file.tell() == 0):
-                        writer.writerow(["EMA", "Profit", "Profitable Orders", "Loss Orders"])
-                    
-                    writer.writerow([result.ema, result.profit, result.profitableOrders, result.lossOrders])
+                aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
+                
+                if result == None:
+                    result = aspirant
+                
+                if aspirant.profit > result.profit:
+                       result = aspirant
 
+    sentResults(result)
+    
+def sentResults(results):
+    data_to_send = [{"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2} for result in results]
 
+    # API endpoint URL
+    url = "192.168.0.142:3001/api/emas"  # Replace with your actual API URL
+
+    # Make the POST request
+    response = requests.post(url, json=data_to_send)
+
+    # Check the response
+    if response.status_code == 200:
+        print("Success:", response.json())
+    else:
+        print("Error:", response.status_code, response.text)
 
 for symbol in symbolsToAnalysts:
     if __name__ == '__main__':
