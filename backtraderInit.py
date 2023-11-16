@@ -100,15 +100,14 @@ def analyzeSymbol(symbol):
                 if result == None:
                     result = aspirant
                 
-                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - aspirant.result):
+                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
 
-    if result  == None: 
+    if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     sentResults(result)
     
 def sentResults(result):
-    data_to_send = []
     data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
 
     # API endpoint URL
