@@ -60,7 +60,7 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'EURCHF', 'GBPJPY', 'GBPCHF', 'USDCHF', 'NZDUSD', 'CADJPY', 'GBPCAD',
                      'NZDCAD', 'AUDJPY', 'EURNOK', 'AUDCAD', 'EURNZD', 'EURCNH', 'NZDCHF',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
-                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF','DE30','US100','EU50','UK100']
+                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
     
 
 def analyzeSymbol(symbol):
@@ -100,17 +100,16 @@ def analyzeSymbol(symbol):
                 if result == None:
                     result = aspirant
                 
-                if aspirant.profit > result.profit:
+                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - aspirant.result):
                        result = aspirant
 
+    if result  == None: 
+        result = Result(symbol, 0, 0, 0, 0, 0)
     sentResults(result)
     
 def sentResults(result):
     data_to_send = []
-    if result != None:
-        data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
-    else:
-        data_to_send = {"symbol": "None", "ema1": 0, "ema2": 0}
+    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
 
     # API endpoint URL
     url = "http://192.168.0.142:3001/api/ema"  # Replace with your actual API URL
@@ -119,7 +118,7 @@ def sentResults(result):
     response = requests.post(url, json=data_to_send)
 
     # Check the response
-    if response.status_code == 200:
+    if response.status_code == 201:
         print("Success:", response.json())
     else:
         print("Error:", response.status_code, response.text)

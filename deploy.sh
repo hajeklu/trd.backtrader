@@ -1,1 +1,2 @@
+rm out.txt
 nohup pypy3 backtraderInit.py > out.txt 2>&1 &
