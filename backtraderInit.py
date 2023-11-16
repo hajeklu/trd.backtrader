@@ -106,10 +106,14 @@ def analyzeSymbol(symbol):
     sentResults(result)
     
 def sentResults(results):
-    data_to_send = [{"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2} for result in results]
+    data_to_send = []
+    if results != None:
+        data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
+    else:
+        data_to_send = {"symbol": "None", "ema1": 0, "ema2": 0}
 
     # API endpoint URL
-    url = "192.168.0.142:3001/api/emas"  # Replace with your actual API URL
+    url = "192.168.0.142:3001/api/ema"  # Replace with your actual API URL
 
     # Make the POST request
     response = requests.post(url, json=data_to_send)
