@@ -3,9 +3,16 @@ import backtrader.feeds as btfeeds
 import csv
 import requests
 import copy
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 from datetime import datetime
 from backtraderStrategies import TestStrategy, CustomAnalyzer
+from flask import Flask, request
+
+app = Flask(__name__)
+BASE_IP = 'http://192.168.0.142'
+TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
+TRD_FACE_ULR = f'{BASE_IP}:3001'
+TIME_FRAME_COMPUTE_IN_MINUTES = 5
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -33,6 +40,8 @@ class RESTAPIData(bt.feed.DataBase):
         global data_cache
         if data_cache.get(self.p.symbol) == None:
             response = requests.get(self.p.url, headers=self.p.headers)
+            if response.status_code != 200:
+                raise Exception('Got unexpected response {}'.format(response.text))
             print('Data requested for ' + self.p.symbol)
             data = response.json()
             self.data = copy.deepcopy(data)
@@ -61,11 +70,10 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'NZDCAD', 'AUDJPY', 'EURNOK', 'AUDCAD', 'EURNZD', 'EURCNH', 'NZDCHF',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
                      'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
-    
 
-def analyzeSymbol(symbol):
+def analyzeSymbol(symbol, progressMap):
     result = None
-    for ema2 in range(1, 201):
+    for ema2 in range(1, 20):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
@@ -74,7 +82,7 @@ def analyzeSymbol(symbol):
             crebro.broker.setcash(START_CASH)
 
             data = RESTAPIData(
-                url=f'http://192.168.0.142:3000/api/prices/{symbol}/5',
+                url=f'{TRD_DATA_PROVIDER_URL}/api/prices/{symbol}/{TIME_FRAME_COMPUTE_IN_MINUTES}',
                 headers={'Accept': 'application/json'},  # Add any necessary headers here
                 symbol=symbol,
             )
@@ -92,8 +100,7 @@ def analyzeSymbol(symbol):
             # print('Final Portfolio Value: %.10f' % crebro.broker.getvalue())
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
-            print(f'EMA {symbol}: {ema1}/{ema2}, Profit: {profit}, orders: {profitableOrders}/{lossOrders}', flush=True)
-
+           
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
                 
@@ -102,27 +109,51 @@ def analyzeSymbol(symbol):
                 
                 if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
-
+        progressMap[symbol] = ema2
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     sentResults(result)
+    
     
 def sentResults(result):
     data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
 
     # API endpoint URL
-    url = "http://192.168.0.142:3001/api/ema"  # Replace with your actual API URL
-
+    url = f'{TRD_FACE_ULR}/api/ema'
     # Make the POST request
     response = requests.post(url, json=data_to_send)
 
     # Check the response
     if response.status_code == 201:
-        print("Success:", response.json())
+        print("Success:", response.text)
     else:
         print("Error:", response.status_code, response.text)
+            
+#curl -X POST localhost:5000/api/compute/run
+@app.route('/api/compute/run', methods=['POST'])
+def startCompute():
+    global progressMap 
+    if app.debug:
+        Process(target=analyzeSymbol, args=("EURUSD", progressMap)).start()
+    else:
+        for symbol in symbolsToAnalysts:
+            Process(target=analyzeSymbol, args=(symbol, progressMap)).start()
+        
+    response_data = {"message": "Accepted", "run started for": symbolsToAnalysts}
+    return response_data
 
-for symbol in symbolsToAnalysts:
-    if __name__ == '__main__':
-        Process(target=analyzeSymbol, args=(symbol,)).start()
-        #analyzeSymbol(symbol)
+@app.route('/api/compute/progress', methods=['GET'])
+def getProgress():
+    global progressMap
+    # Convert DictProxy to a regular dictionary
+    progress_dict = dict(progressMap)
+    response_data = {"progress": progress_dict}
+    return response_data
+
+if __name__ == "__main__":
+    manager = Manager()
+    progressMap = manager.dict()
+    for symbol in symbolsToAnalysts:
+        progressMap[symbol] = 0
+    app.run(debug=False)
+    #analyzeSymbol(symbol)
