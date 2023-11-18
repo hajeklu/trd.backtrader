@@ -12,7 +12,7 @@ app = Flask(__name__)
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES = 5
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 5
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -71,9 +71,9 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
                      'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
 
-def analyzeSymbol(symbol, progressMap):
+def analyzeSymbol(symbol, timeFrame, progressMap):
     result = None
-    for ema2 in range(1, 20):
+    for ema2 in range(1, 201):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
@@ -82,7 +82,7 @@ def analyzeSymbol(symbol, progressMap):
             crebro.broker.setcash(START_CASH)
 
             data = RESTAPIData(
-                url=f'{TRD_DATA_PROVIDER_URL}/api/prices/{symbol}/{TIME_FRAME_COMPUTE_IN_MINUTES}',
+                url=f'{TRD_DATA_PROVIDER_URL}/api/prices/{symbol}/{timeFrame}',
                 headers={'Accept': 'application/json'},  # Add any necessary headers here
                 symbol=symbol,
             )
@@ -131,13 +131,21 @@ def sentResults(result):
             
 #curl -X POST localhost:5000/api/compute/run
 @app.route('/api/compute/run', methods=['POST'])
-def startCompute():
+@app.route('/api/compute/run/<timeFrame>', methods=['POST'])
+def startCompute(timeFrame = TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT):
+    allowed_time_frames = [1, 5, 15, 30, 60]
+    timeFrame = int(timeFrame)
+
+    # Validation check
+    if timeFrame not in allowed_time_frames:
+        return {"error": "Invalid time frame. Must be one of [1, 5, 15, 30, 60]."}    
+    
     global progressMap 
     if app.debug:
-        Process(target=analyzeSymbol, args=("EURUSD", progressMap)).start()
+        Process(target=analyzeSymbol, args=("EURUSD", timeFrame, progressMap)).start()
     else:
         for symbol in symbolsToAnalysts:
-            Process(target=analyzeSymbol, args=(symbol, progressMap)).start()
+            Process(target=analyzeSymbol, args=(symbol, timeFrame, progressMap)).start()
         
     response_data = {"message": "Accepted", "run started for": symbolsToAnalysts}
     return response_data
