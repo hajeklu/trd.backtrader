@@ -111,12 +111,13 @@ def analyzeSymbol(symbol, timeFrame):
                 
                 if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
-        print(f'Progress {symbol} - {ema2}')
+        print(f'Progress {symbol} - {ema2}', end=" ", flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
     topicName = f'EMA-{symbol}-{timeFrame}'
-    sentResultsToRabbitMQ(result,topicName)
+    sentResults(result)
+    #sentResultsToRabbitMQ(result,topicName)
     
     
 def sentResults(result):
