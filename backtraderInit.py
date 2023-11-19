@@ -139,7 +139,7 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
         connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.142')) # Update the host if RabbitMQ is not on localhost
         channel = connection.channel()
         # Declare a queue (if it doesn't exist, it will be created)
-        channel.queue_declare(queue=f'Results_{TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT}') # Replace with your queue name
+        channel.queue_declare(queue=f'Results_{TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT}', durable=True) # Replace with your queue name
 
         # Publish the message
         channel.basic_publish(exchange='', routing_key=topicName, body=json.dumps(data_to_send))
