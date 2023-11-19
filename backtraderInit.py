@@ -104,20 +104,18 @@ def analyzeSymbol(symbol, timeFrame):
            
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                topicName = f'EMA-{symbol}-{timeFrame}-aspirants'
-                sentResultsToRabbitMQ(aspirant,topicName)
+                sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
                 
                 if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
-        print(f'Progress {symbol} - {ema2}', end=" ", flush=True)
+        print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    topicName = f'EMA-{symbol}-{timeFrame}'
     sentResults(result)
-    #sentResultsToRabbitMQ(result,topicName)
+    sentResultsToRabbitMQ(result)
     
     
 def sentResults(result):
@@ -134,14 +132,14 @@ def sentResults(result):
     else:
         print("Error:", response.status_code, response.text)
   
-def sentResultsToRabbitMQ(result, topicName):
-    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
+def sentResultsToRabbitMQ(result, isAspirant = False):
+    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2, "profit": result.profit, "profitableOrders": result.profitableOrders, "lossOrders": result.lossOrders, "isAspirant": isAspirant}
     try:
         # Setup RabbitMQ connection and channel
         connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.142')) # Update the host if RabbitMQ is not on localhost
         channel = connection.channel()
         # Declare a queue (if it doesn't exist, it will be created)
-        channel.queue_declare(queue=topicName) # Replace with your queue name
+        channel.queue_declare(queue=f'Results_{TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT}') # Replace with your queue name
 
         # Publish the message
         channel.basic_publish(exchange='', routing_key=topicName, body=json.dumps(data_to_send))
