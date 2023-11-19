@@ -74,7 +74,7 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
 
 def analyzeSymbol(symbol, timeFrame):
     result = None
-    for ema2 in range(1, 20):
+    for ema2 in range(1, 201):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
