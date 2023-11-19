@@ -133,7 +133,7 @@ def sentResults(result):
         print("Error:", response.status_code, response.text)
   
 def sentResultsToRabbitMQ(result, isAspirant = False):
-    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2, "profit": result.profit, "profitableOrders": result.profitableOrders, "lossOrders": result.lossOrders, "isAspirant": isAspirant}
+    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2, "profit": result.profit, "profitableOrders": result.profitableOrders, "lossOrders": result.lossOrders, "isAspirant": isAspirant, "timeFrame": TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT}
     try:
         # Setup RabbitMQ connection and channel
         connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.142')) # Update the host if RabbitMQ is not on localhost
