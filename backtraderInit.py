@@ -3,12 +3,13 @@ import backtrader.feeds as btfeeds
 import csv
 import requests
 import copy
-from multiprocessing import Process, Manager
+import pika
+import json
+from multiprocessing import Process
 from datetime import datetime
 from backtraderStrategies import TestStrategy, CustomAnalyzer
-from flask import Flask, request
 
-app = Flask(__name__)
+
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
@@ -71,9 +72,9 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
                      'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
 
-def analyzeSymbol(symbol, timeFrame, progressMap):
+def analyzeSymbol(symbol, timeFrame):
     result = None
-    for ema2 in range(1, 201):
+    for ema2 in range(1, 20):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
@@ -103,16 +104,19 @@ def analyzeSymbol(symbol, timeFrame, progressMap):
            
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                
+                topicName = f'EMA-{symbol}-{timeFrame}-aspirants'
+                sentResultsToRabbitMQ(result,topicName)
                 if result == None:
                     result = aspirant
                 
                 if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
-        progressMap[symbol] = ema2
+        print(f'Progress {symbol} - {ema2}')
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
-    sentResults(result)
+    
+    topicName = f'EMA-{symbol}-{timeFrame}'
+    sentResultsToRabbitMQ(result,topicName)
     
     
 def sentResults(result):
@@ -128,40 +132,27 @@ def sentResults(result):
         print("Success:", response.text)
     else:
         print("Error:", response.status_code, response.text)
+  
+def sentResultsToRabbitMQ(result, topicName):
+    data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
+    try:
+        # Setup RabbitMQ connection and channel
+        connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.142')) # Update the host if RabbitMQ is not on localhost
+        channel = connection.channel()
+        # Declare a queue (if it doesn't exist, it will be created)
+        channel.queue_declare(queue=topicName) # Replace with your queue name
+
+        # Publish the message
+        channel.basic_publish(exchange='', routing_key=topicName, body=json.dumps(data_to_send))
+
+        print("RabbitMQ Success: Message sent to RabbitMQ")
+    except Exception as e:
+        print("RabbitMQ Error:", str(e))
+    finally:
+        if connection:
+            connection.close()
             
-#curl -X POST localhost:5000/api/compute/run
-@app.route('/api/compute/run', methods=['POST'])
-@app.route('/api/compute/run/<timeFrame>', methods=['POST'])
-def startCompute(timeFrame = TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT):
-    allowed_time_frames = [1, 5, 15, 30, 60]
-    timeFrame = int(timeFrame)
-
-    # Validation check
-    if timeFrame not in allowed_time_frames:
-        return {"error": "Invalid time frame. Must be one of [1, 5, 15, 30, 60]."}    
-    
-    global progressMap 
-    if app.debug:
-        Process(target=analyzeSymbol, args=("EURUSD", timeFrame, progressMap)).start()
-    else:
-        for symbol in symbolsToAnalysts:
-            Process(target=analyzeSymbol, args=(symbol, timeFrame, progressMap)).start()
-        
-    response_data = {"message": "Accepted", "run started for": symbolsToAnalysts}
-    return response_data
-
-@app.route('/api/compute/progress', methods=['GET'])
-def getProgress():
-    global progressMap
-    # Convert DictProxy to a regular dictionary
-    progress_dict = dict(progressMap)
-    response_data = {"progress": progress_dict}
-    return response_data
-
 if __name__ == "__main__":
-    manager = Manager()
-    progressMap = manager.dict()
     for symbol in symbolsToAnalysts:
-        progressMap[symbol] = 0
-    app.run(debug=False)
-    #analyzeSymbol(symbol)
+        Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
+        #analyzeSymbol(symbol)
