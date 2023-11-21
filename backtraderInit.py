@@ -5,8 +5,8 @@ import requests
 import copy
 import pika
 import json
-import time
-from multiprocessing import Process
+from multiprocessing import Process    
+from datetime import datetime
 from datetime import datetime
 from backtraderStrategies import TestStrategy, CustomAnalyzer
 
@@ -117,6 +117,8 @@ def analyzeSymbol(symbol, timeFrame):
     
     sentResults(result)
     sentResultsToRabbitMQ(result)
+    current_time = datetime.now()
+    print(current_time)
     
     
 def sentResults(result):
@@ -154,10 +156,6 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
             connection.close()
             
 if __name__ == "__main__":
-    while True:
-        for symbol in symbolsToAnalysts:
-            Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-            #analyzeSymbol(symbol)
-    
-    # Čekání 2 hodiny (7200 sekund)
-    time.sleep(7200)
+    for symbol in symbolsToAnalysts:
+        Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
+        #analyzeSymbol(symbol)
