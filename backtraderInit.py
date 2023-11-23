@@ -118,7 +118,7 @@ def analyzeSymbol(symbol, timeFrame):
     #sentResults(result)
     #sentResultsToRabbitMQ(result)
     current_time = datetime.now()
-    print(f'Analysed {symbol} at {result}', flush=True)
+    print(f'Analysed {symbol} at {result.ema1} / {result.ema2}', flush=True)
     print(current_time)
     
     
