@@ -111,13 +111,14 @@ def analyzeSymbol(symbol, timeFrame):
                 
                 if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
-        print(f'Progress {symbol} - {ema2}', flush=True)
+        # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    sentResults(result)
-    sentResultsToRabbitMQ(result)
+    #sentResults(result)
+    #sentResultsToRabbitMQ(result)
     current_time = datetime.now()
+    print(f'Analysed {symbol} at {result}', flush=True)
     print(current_time)
     
     
@@ -130,9 +131,7 @@ def sentResults(result):
     response = requests.post(url, json=data_to_send)
 
     # Check the response
-    if response.status_code == 201:
-        print("Success:", response.text)
-    else:
+    if response.status_code != 201:
         print("Error:", response.status_code, response.text)
   
 def sentResultsToRabbitMQ(result, isAspirant = False):
@@ -148,7 +147,6 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
         # Publish the message
         channel.basic_publish(exchange='', routing_key=topicName, body=json.dumps(data_to_send))
 
-        print("RabbitMQ Success: Message sent to RabbitMQ")
     except Exception as e:
         print("RabbitMQ Error:", str(e))
     finally:
@@ -158,4 +156,4 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
 if __name__ == "__main__":
     for symbol in symbolsToAnalysts:
         Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-        #analyzeSymbol(symbol)
+        #analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)

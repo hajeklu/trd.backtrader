@@ -45,6 +45,7 @@ class TestStrategy(bt.Strategy):
             self.datas[0], period=self.params.EMA1)
         self.ema2 = bt.indicators.ExponentialMovingAverage(
             self.datas[0], period=self.params.EMA2)
+        self.rsi = bt.indicators.RSI(self.datas[0])
         self.profitable_orders = 0
         self.loss_orders = 0
 
@@ -86,10 +87,11 @@ class TestStrategy(bt.Strategy):
 
         ema_1 = self.ema1[0]
         ema_2 = self.ema2[0]
+        rsi = self.rsi[0]
 
-        if self.previous_ema1 <= self.previous_ema2 and ema_1 > ema_2:
+        if self.previous_ema1 <= self.previous_ema2 and ema_1 > ema_2 and rsi <= 30:
             self.order = self.buy()
-        if self.previous_ema1 >= self.previous_ema2 and ema_1 < ema_2:
+        if self.previous_ema1 >= self.previous_ema2 and ema_1 < ema_2 and rsi >= 70:
             self.order = self.sell()
 
         self.previous_ema1 = ema_1
