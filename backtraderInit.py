@@ -75,8 +75,8 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
 
 def analyzeSymbol(symbol, timeFrame):
     result = None
-    for ema2 in range(1, 201):
-        for ema1 in range(1, ema2):
+    for ema2 in range(10, 201):
+        for ema1 in range(10, ema2):
             crebro = bt.Cerebro()
 
             START_CASH = 1000.0
@@ -109,7 +109,7 @@ def analyzeSymbol(symbol, timeFrame):
                 if result == None:
                     result = aspirant
                 
-                if aspirant.profit  > result.profit:
+                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
