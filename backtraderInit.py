@@ -102,10 +102,9 @@ def analyzeSymbol(symbol, timeFrame):
             # print('Final Portfolio Value: %.10f' % crebro.broker.getvalue())
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
-           
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                print(f'Analysed {symbol} at {aspirant.ema1} / {aspirant.ema2}', flush=True)
+                print(f'Analysed {symbol} at {aspirant.ema1} / {aspirant.ema2}', flush=True) 
                 #sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
@@ -156,5 +155,5 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
             
 if __name__ == "__main__":
     for symbol in symbolsToAnalysts:
-        Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-        #analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
+        #Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
+        analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
