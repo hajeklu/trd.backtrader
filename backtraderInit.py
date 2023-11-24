@@ -105,6 +105,7 @@ def analyzeSymbol(symbol, timeFrame):
            
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
+                print(f'Analysed {symbol} at {aspirant.ema1} / {aspirant.ema2}', flush=True)
                 sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
