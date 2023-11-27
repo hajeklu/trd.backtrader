@@ -107,23 +107,15 @@ def analyzeSymbol(symbol, timeFrame):
                 sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
-                    
-                aspirantLossOrders = aspirant.lossOrders
-                if aspirantLossOrders == 0:
-                    aspirantLossOrders = 1
-                    
-                resultLossOrders = result.lossOrders
-                if resultLossOrders == 0:
-                    resultLossOrders = 1
                 
-                if aspirant.profitableOrders / aspirantLossOrders  > result.profitableOrders / resultLossOrders:
+                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
-    if result == None: 
+    if result == None or (result.ema2 - result.ema1) < 30: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    #sentResults(result)
-    #sentResultsToRabbitMQ(result)
+    sentResults(result)
+    sentResultsToRabbitMQ(result)
     print(f'Result {symbol} at {result.ema1} / {result.ema2}', flush=True)
     
 def sentResults(result):
