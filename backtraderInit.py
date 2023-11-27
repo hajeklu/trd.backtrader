@@ -104,23 +104,19 @@ def analyzeSymbol(symbol, timeFrame):
             profit = FINAL_CASH - START_CASH
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                print(f'Analysed {symbol} at {aspirant.ema1} / {aspirant.ema2}', flush=True) 
                 sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
                 
-                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
+                if aspirant.profitableOrders / aspirant.lossOrders  > result.profitableOrders - result.lossOrders:
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    sentResults(result)
-    sentResultsToRabbitMQ(result)
-    current_time = datetime.now()
-    print(f'Analysed {symbol} at {result.ema1} / {result.ema2}', flush=True)
-    print(current_time)
-    
+    #sentResults(result)
+    #sentResultsToRabbitMQ(result)
+    print(f'Result {symbol} at {result.ema1} / {result.ema2}', flush=True)
     
 def sentResults(result):
     data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
