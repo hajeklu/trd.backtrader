@@ -14,7 +14,7 @@ from backtraderStrategies import TestStrategy, CustomAnalyzer
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 60
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 5
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -102,16 +102,16 @@ def analyzeSymbol(symbol, timeFrame):
             # print('Final Portfolio Value: %.10f' % crebro.broker.getvalue())
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
-            if profitableOrders > lossOrders and profit > 0:
+            if profitableOrders > lossOrders and profit > 0 and (result.ema2 - result.ema1) < 30:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
                 #sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
                 
-                if (aspirant.ema2 - aspirant.ema1)  > (result.ema2 - result.ema1):
+                if aspirant.profit > result.profit:
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
-    if result == None or (result.ema2 - result.ema1) < 30: 
+    if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
     #sentResults(result)
