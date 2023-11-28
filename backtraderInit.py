@@ -14,7 +14,7 @@ from backtraderStrategies import TestStrategy, CustomAnalyzer
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 5
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 60
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -44,7 +44,7 @@ class RESTAPIData(bt.feed.DataBase):
             response = requests.get(self.p.url, headers=self.p.headers)
             if response.status_code != 200:
                 raise Exception('Got unexpected response {}'.format(response.text))
-            print('Data requested for ' + self.p.symbol)
+            print('Data requested for ' + self.p.symbol, flush=True)
             data = response.json()
             self.data = copy.deepcopy(data)
             data_cache[self.p.symbol] = copy.deepcopy(data)
@@ -104,7 +104,7 @@ def analyzeSymbol(symbol, timeFrame):
             profit = FINAL_CASH - START_CASH
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                sentResultsToRabbitMQ(aspirant, True)
+                #sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
                 
@@ -114,8 +114,8 @@ def analyzeSymbol(symbol, timeFrame):
     if result == None or (result.ema2 - result.ema1) < 30: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    sentResults(result)
-    sentResultsToRabbitMQ(result)
+    #sentResults(result)
+    #sentResultsToRabbitMQ(result)
     if result.ema1 != 0 and result.ema2 != 0:
         print(f'Result {symbol} at {result.ema1} / {result.ema2}', flush=True)
     
