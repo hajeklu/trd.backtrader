@@ -99,7 +99,6 @@ def analyzeSymbol(symbol, timeFrame):
             profitableOrders = analysis['profitableOrders']
             lossOrders = analysis['lossOrders']
 
-            print(f'EMA {ema1}/{ema2} orders: {profitableOrders}/{lossOrders}', flush=True)
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
             if profitableOrders > lossOrders and profit > 0:
