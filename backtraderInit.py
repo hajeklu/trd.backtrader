@@ -107,7 +107,7 @@ def analyzeSymbol(symbol, timeFrame):
                 if result == None:
                     result = aspirant
                 
-                if aspirant.profit > result.profit:
+                if (aspirant.lossOrders / aspirant.profitableOrders) < (result.lossOrders / result.profitableOrders):
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
