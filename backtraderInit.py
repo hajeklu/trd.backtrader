@@ -103,10 +103,10 @@ def analyzeSymbol(symbol, timeFrame):
             profit = FINAL_CASH - START_CASH
             if profitableOrders > lossOrders and profit > 0:
                 aspirant = Result(symbol, ema1, ema2, profit, profitableOrders, lossOrders)
-                sentResultsToRabbitMQ(aspirant, True)
+                #sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
-                
+                print(f'Result {symbol} at {aspirant.ema1} / {aspirant.ema2} orders: {aspirant.lossOrders} / {aspirant.profitableOrders}', flush=True)
                 if (aspirant.lossOrders + 1 / aspirant.profitableOrders) < (result.lossOrders + 1 / result.profitableOrders):
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
