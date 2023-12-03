@@ -14,7 +14,7 @@ from backtraderStrategies import TestStrategy, CustomAnalyzer
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 5
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 1
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -71,7 +71,7 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
                      'EURCHF', 'GBPJPY', 'GBPCHF', 'USDCHF', 'NZDUSD', 'CADJPY', 'GBPCAD',
                      'NZDCAD', 'AUDJPY', 'EURNOK', 'AUDCAD', 'EURNZD', 'EURCNH', 'NZDCHF',
                      'GBPNZD', 'EURCAD', 'AUDCHF', 'AUDNZD', 'EURAUD', 'GBPAUD', 'USDNOK',
-                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF']
+                     'USDCNH', 'USDSEK', 'CHFJPY', 'EURSEK', 'CADCHF', 'BITCOIN']
 
 def analyzeSymbol(symbol, timeFrame):
     result = None
@@ -107,13 +107,13 @@ def analyzeSymbol(symbol, timeFrame):
                 if result == None:
                     result = aspirant
                 
-                if (aspirant.lossOrders / aspirant.profitableOrders) < (result.lossOrders / result.profitableOrders):
+                if (aspirant.lossOrders + 1 / aspirant.profitableOrders) < (result.lossOrders + 1 / result.profitableOrders):
                        result = aspirant
         # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
-    #sentResults(result)
+    sentResults(result)
     sentResultsToRabbitMQ(result)
     if result.ema1 != 0 and result.ema2 != 0:
         print(f'Result {symbol} at {result.ema1} / {result.ema2} orders: {result.lossOrders} / {result.profitableOrders}', flush=True)
