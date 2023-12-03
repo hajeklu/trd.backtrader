@@ -136,7 +136,7 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
         # Setup RabbitMQ connection and channel
         connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.142')) # Update the host if RabbitMQ is not on localhost
         channel = connection.channel()
-        topicName = f'Results_5'
+        topicName = f'Results'
         # Declare a queue (if it doesn't exist, it will be created)
         channel.queue_declare(queue=topicName, durable=True) # Replace with your queue name
 
