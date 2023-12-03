@@ -151,5 +151,5 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
             
 if __name__ == "__main__":
     for symbol in symbolsToAnalysts:
-        #Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-        analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
+        Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
+        #analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
