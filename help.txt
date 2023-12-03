@@ -1,1 +1,1 @@
-nohup python3 backtraderInit.py > out.txt 2>&1 &
+nohup pypy3 backtraderInit.py > out.txt 2>&1 &
