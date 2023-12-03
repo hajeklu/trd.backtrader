@@ -75,8 +75,8 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
 
 def analyzeSymbol(symbol, timeFrame):
     result = None
-    for ema2 in range(10, 201):
-        for ema1 in range(10, ema2):
+    for ema2 in range(1, 201):
+        for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
 
             START_CASH = 1000.0
@@ -99,7 +99,7 @@ def analyzeSymbol(symbol, timeFrame):
             profitableOrders = analysis['profitableOrders']
             lossOrders = analysis['lossOrders']
 
-            # print('Final Portfolio Value: %.10f' % crebro.broker.getvalue())
+            print(f'EMA {ema1}/{ema2} orders: {profitableOrders}/{lossOrders}', flush=True)
             FINAL_CASH = crebro.broker.getvalue()
             profit = FINAL_CASH - START_CASH
             if profitableOrders > lossOrders and profit > 0:
@@ -152,5 +152,5 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
             
 if __name__ == "__main__":
     for symbol in symbolsToAnalysts:
-        Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-        #analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
+        #Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
+        analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
