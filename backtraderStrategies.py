@@ -89,10 +89,10 @@ class TestStrategy(bt.Strategy):
         ema_2 = self.ema2[0]
         rsi = self.rsi[0]
         if self.previous_ema1 <= self.previous_ema2 and ema_1 > ema_2:
-            if rsi < 50:
+            if rsi < 55:
                 self.order = self.buy()
         if self.previous_ema1 >= self.previous_ema2 and ema_1 < ema_2:
-            if rsi > 50:
+            if rsi > 45:
                 self.order = self.sell()
 
         self.previous_ema1 = ema_1
