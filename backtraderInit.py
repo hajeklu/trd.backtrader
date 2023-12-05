@@ -14,7 +14,7 @@ from backtraderStrategies import TestStrategy, CustomAnalyzer
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 1
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 60
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
