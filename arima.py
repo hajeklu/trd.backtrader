@@ -19,7 +19,7 @@ def ad_test(dataset):
         print("=> Data is non-stationary")
 
 # Definujte URL a hlavičky pro vaše API
-url = 'http://192.168.0.142:3000/api/prices/EURUSD/60'  # Příklad URL, upravte podle vašich potřeb
+url = 'http://192.168.0.142:3000/api/prices/EURUSD/1'  # Příklad URL, upravte podle vašich potřeb
 headers = {'Accept': 'application/json'}  # Případné hlavičky pro autentizaci
 
 # Získání dat z API
@@ -32,7 +32,9 @@ data = response.json()
 
 # Převod dat na DataFrame
 df = pd.DataFrame(data)
-
+print(df.head())
+print(df.tail())
+print(df.shape)
 # Převedení časového razítka na čitelný formát a nastavení jako indexu
 df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
 df.set_index('timestamp', inplace=True)
