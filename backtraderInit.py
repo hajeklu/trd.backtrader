@@ -75,6 +75,7 @@ symbolsToAnalysts = ['EURGBP', 'USDCAD', 'AUDUSD', 'EURUSD', 'USDJPY', 'GBPUSD',
 
 def analyzeSymbol(symbol, timeFrame):
     result = None
+    results = []
     for ema2 in range(1, 201):
         for ema1 in range(1, ema2):
             crebro = bt.Cerebro()
@@ -106,17 +107,16 @@ def analyzeSymbol(symbol, timeFrame):
                 #sentResultsToRabbitMQ(aspirant, True)
                 if result == None:
                     result = aspirant
-                print(f'Result {symbol} at {aspirant.ema1} / {aspirant.ema2} orders: {aspirant.lossOrders} / {aspirant.profitableOrders}', flush=True)
+                results.append(aspirant)
                 if (aspirant.lossOrders + 1 / aspirant.profitableOrders) < (result.lossOrders + 1 / result.profitableOrders):
                        result = aspirant
-        # print(f'Progress {symbol} - {ema2}', flush=True)
     if result == None: 
         result = Result(symbol, 0, 0, 0, 0, 0)
     
+    for aspirant in results:
+        print(f'Result {symbol} at {aspirant.ema1} / {aspirant.ema2} orders: {aspirant.lossOrders} / {aspirant.profitableOrders}', flush=True)
     sentResults(result)
     sentResultsToRabbitMQ(result)
-    if result.ema1 != 0 and result.ema2 != 0:
-        print(f'Result {symbol} at {result.ema1} / {result.ema2} orders: {result.lossOrders} / {result.profitableOrders}', flush=True)
     
 def sentResults(result):
     data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
