@@ -88,12 +88,13 @@ class TestStrategy(bt.Strategy):
         ema_2 = self.ema2[0]
         if self.previous_ema1 <= self.previous_ema2 and ema_1 > ema_2:
             self.order = self.buy()
+            self.orderProfit = 0
         if self.previous_ema1 >= self.previous_ema2 and ema_1 < ema_2:
             self.order = self.sell()
+            self.orderProfit = 0
 
         self.previous_ema1 = ema_1
         self.previous_ema2 = ema_2
-        self.orderProfit = 0
 
     def getOrderProfit(self):
         if self.order.isbuy():
