@@ -5,16 +5,17 @@ import requests
 import copy
 import pika
 import json
+import time
 from multiprocessing import Process    
 from datetime import datetime
 from datetime import datetime
 from backtraderStrategies import TestStrategy, CustomAnalyzer
 
-
+start_time = time.time()
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 60
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 1
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -117,6 +118,12 @@ def analyzeSymbol(symbol, timeFrame):
         print(f'Result {symbol} at {aspirant.ema1} / {aspirant.ema2} orders: {aspirant.lossOrders} / {aspirant.profitableOrders}', flush=True)
     sentResults(result)
     sentResultsToRabbitMQ(result)
+    global start_time
+    duration = end_time - start_time
+    # Print the start, end, and duration
+    print("Process started at:", time.ctime(start_time))
+    print("Process finished at:", time.ctime(end_time))
+    print("Total duration: {:.2f} seconds".format(duration))
     
 def sentResults(result):
     data_to_send = {"symbol": result.symbol, "ema1": result.ema1, "ema2": result.ema2}
