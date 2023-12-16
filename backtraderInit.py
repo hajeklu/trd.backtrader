@@ -119,6 +119,7 @@ def analyzeSymbol(symbol, timeFrame):
     sentResults(result)
     sentResultsToRabbitMQ(result)
     global start_time
+    end_time = time.time()
     duration = end_time - start_time
     # Print the start, end, and duration
     print("Process started at:", time.ctime(start_time))
