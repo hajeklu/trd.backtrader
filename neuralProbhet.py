@@ -58,7 +58,7 @@ def predict(symbol, interval = 60):
             "yhat95": last_prediction['yhat1 95.0%'],
         }
         # URL for your POST endpoint
-        post_url = 'http://localhost:3001/api/prediction'
+        post_url = 'http://192.168.0.236:3001/api/prediction'
 
         # Making the POST request
         response = requests.post(post_url, json=post_data)
