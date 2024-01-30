@@ -15,7 +15,7 @@ start_time = time.time()
 BASE_IP = 'http://192.168.0.142'
 TRD_DATA_PROVIDER_URL = f'{BASE_IP}:3000'
 TRD_FACE_ULR = f'{BASE_IP}:3001'
-TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 1
+TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT = 60
 
 class Result:
     def __init__(self,symbol, ema1, ema2, profit, profitableOrders, lossOrders):
@@ -109,6 +109,7 @@ def analyzeSymbol(symbol, timeFrame):
                 if result == None:
                     result = aspirant
                 results.append(aspirant)
+                print(f'Result {symbol} at {aspirant.ema1} / {aspirant.ema2} orders: {aspirant.lossOrders} / {aspirant.profitableOrders}', flush=True)
                 if (aspirant.lossOrders + 1 / aspirant.profitableOrders) < (result.lossOrders + 1 / result.profitableOrders):
                        result = aspirant
     if result == None: 
@@ -160,4 +161,4 @@ def sentResultsToRabbitMQ(result, isAspirant = False):
 if __name__ == "__main__":
     for symbol in symbolsToAnalysts:
         Process(target=analyzeSymbol, args=(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)).start()
-        #analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)
+        analyzeSymbol(symbol, TIME_FRAME_COMPUTE_IN_MINUTES_DEFAULT)

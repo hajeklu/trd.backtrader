@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 
 url = 'http://192.168.0.142:3000/api/prices/AUDUSD/5'  # Příklad URL, upravte podle vašich potřeb
@@ -32,7 +33,13 @@ def create_feature(df):
     df['month'] = df.index.month
     df['year'] = df.index.year
     df['dayofyear'] = df.index.dayofyear
+    return df
 
-create_feature(df)
-sns.boxplot(data=df, x='hour', y='close')
-plt.show()
+train = create_feature(train)
+test = create_feature(test)
+
+FEATURES = ['hour', 'dayofweek', 'quarter', 'month', 'year', 'dayofyear']
+TARGET = 'close'
+
+req = xgb.XGBRegressor(n_estimators=1000, learning_rate=0.05)
+#req.fit(train.drop('close', axis=1), train['close'], early_stopping_rounds=5, eval_set=[(test.drop('close', axis=1), test['close'])], verbose=False)
