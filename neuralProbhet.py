@@ -19,7 +19,7 @@ def fetch_data(url, symbol, interval):
         raise Exception(f"Error fetching data: {response.status_code}")
 
 
-def predict(symbol, interval = 1440):
+def predict(symbol, interval = 60):
     while True:
         api_url = f'http://192.168.0.236:3000/api/prices/{symbol}/{interval}'
 
@@ -37,7 +37,7 @@ def predict(symbol, interval = 1440):
 
         # Training the model
         model = NeuralProphet(n_lags=24, quantiles=[0.05, 0.95])
-        model.fit(df, freq='D')
+        model.fit(df, freq='H')
 
         # Making a future dataframe for 1 future period
         future_periods = model.make_future_dataframe(df, periods=1)
