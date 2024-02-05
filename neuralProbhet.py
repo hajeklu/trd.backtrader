@@ -37,7 +37,7 @@ def predict(symbol, interval = 1440):
 
         # Training the model
         model = NeuralProphet(n_lags=24, quantiles=[0.05, 0.95])
-        model.fit(df, freq='H')
+        model.fit(df, freq='D')
 
         # Making a future dataframe for 1 future period
         future_periods = model.make_future_dataframe(df, periods=1)
