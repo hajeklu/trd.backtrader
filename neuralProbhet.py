@@ -19,7 +19,7 @@ def fetch_data(url, symbol, interval):
         raise Exception(f"Error fetching data: {response.status_code}")
 
 
-def predict(symbol, interval = 60):
+def predict(symbol, interval = 1440):
     while True:
         api_url = f'http://192.168.0.236:3000/api/prices/{symbol}/{interval}'
 
@@ -32,20 +32,19 @@ def predict(symbol, interval = 60):
         df['y'] = df['close']
         df = df[['ds', 'y']]  # Keeping only 'ds' and 'y' columns
         df.set_index('ds', inplace=True)
-        df = df.resample('H').interpolate(method='linear')
-        df.reset_index(inplace=True)
+        df = df.asfreq('D')
 
-        # Training the model
+        # Optional: Fill NaN values if needed
+        df = df.fillna(method='ffill')  # or 'bfill' or any other appropriate method
+        df.reset_index(inplace=True)
         model = NeuralProphet(n_lags=24, quantiles=[0.05, 0.95])
-        model.fit(df, freq='H')
+        model.fit(df, freq='D')
 
         # Making a future dataframe for 1 future period
         future_periods = model.make_future_dataframe(df, periods=1)
 
         # Predicting the future
         forecast_future = model.predict(future_periods)
-        print(forecast_future.tail())
-
         # Extracting the last prediction
         last_prediction = forecast_future.iloc[-1]
 
