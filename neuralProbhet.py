@@ -67,7 +67,7 @@ def predict(symbol, interval = 1440):
             print('Prediction successfully sent!')
         else:
             print(f'Error sending prediction: {response.status_code} - {response.text}')
-        time.sleep(600)
+        time.sleep(1800)
         
 
 if __name__ == "__main__":
