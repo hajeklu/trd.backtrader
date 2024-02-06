@@ -20,7 +20,7 @@ def fetch_data(url, symbol, interval):
 
 
 def predict(symbol, interval = 1440):
-    while True:
+  while True:
         api_url = f'http://192.168.0.236:3000/api/prices/{symbol}/{interval}'
 
         # Fetching data
@@ -32,19 +32,20 @@ def predict(symbol, interval = 1440):
         df['y'] = df['close']
         df = df[['ds', 'y']]  # Keeping only 'ds' and 'y' columns
         df.set_index('ds', inplace=True)
-        df = df.asfreq('D')
-
-        # Optional: Fill NaN values if needed
-        df = df.fillna(method='ffill')  # or 'bfill' or any other appropriate method
+        df = df.resample('H').interpolate(method='linear')
         df.reset_index(inplace=True)
+
+        # Training the model
         model = NeuralProphet(n_lags=24, quantiles=[0.05, 0.95])
-        model.fit(df, freq='D')
+        model.fit(df, freq='H')
 
         # Making a future dataframe for 1 future period
         future_periods = model.make_future_dataframe(df, periods=1)
 
         # Predicting the future
         forecast_future = model.predict(future_periods)
+        print(forecast_future.tail())
+
         # Extracting the last prediction
         last_prediction = forecast_future.iloc[-1]
 
@@ -57,7 +58,7 @@ def predict(symbol, interval = 1440):
             "yhat95": last_prediction['yhat1 95.0%'],
         }
         # URL for your POST endpoint
-        post_url = 'http://192.168.0.236:3001/api/prediction'
+        post_url = 'http://localhost:3001/api/prediction'
 
         # Making the POST request
         response = requests.post(post_url, json=post_data)
@@ -67,7 +68,7 @@ def predict(symbol, interval = 1440):
             print('Prediction successfully sent!')
         else:
             print(f'Error sending prediction: {response.status_code} - {response.text}')
-        time.sleep(1800)
+        time.sleep(1200)
         
 
 if __name__ == "__main__":
