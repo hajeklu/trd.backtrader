@@ -19,7 +19,7 @@ def fetch_data(url, symbol, interval):
         raise Exception(f"Error fetching data: {response.status_code}")
 
 
-def predict(symbol, interval = 1440):
+def predict(symbol, interval = 60):
     while True:
         api_url = f'http://192.168.0.236:3000/api/prices/{symbol}/{interval}'
 
